@@ -5,6 +5,7 @@ const fallSound = new Audio('https://actions.google.com/sounds/v1/cartoon/slap_w
 fallSound.volume = 0.1
 
 const score = document.querySelector('#score')
+const highScoreDisplay = document.querySelector('#highScoreDisplay') // Acá mostramos el puntaje más alto
 
 const MODES = {
   FALL: 'fall',
@@ -21,8 +22,13 @@ const INITIAL_X_SPEED = 2
 let boxes = []
 let debris = { x: 0, y: 0, width: 0 }
 let scrollCounter, cameraY, current, mode, xSpeed, ySpeed
+let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0; // Leemos el puntaje más alto del localStorage
+
+// Mostramos el puntaje más alto en pantalla
+highScoreDisplay.textContent = `Puntuación más alta: ${highScore}`;
 
 function initializeGameState() {
+  // Inicializamos el juego con el primer bloque en el centro
   boxes = [{
     x: (canvas.width / 2) - (INITIAL_BOX_WIDTH / 2),
     y: 200,
@@ -36,16 +42,17 @@ function initializeGameState() {
   ySpeed = INITIAL_Y_SPEED
   scrollCounter = 0
   cameraY = 0
-  createNewBox()
+  createNewBox() // Creamos el siguiente bloque
 }
 
 function restart() {
+  // Reiniciamos todo y volvemos a dibujar
   initializeGameState()
   draw()
 }
 
 function draw() {
-  if (mode === MODES.GAMEOVER) return
+  if (mode === MODES.GAMEOVER) return // Si se terminó el juego, no seguimos dibujando
 
   context.fillStyle = 'rgba(0, 0, 0, 0.5)'
   context.fillRect(0, 0, canvas.width, canvas.height)
@@ -130,6 +137,14 @@ function gameOver() {
   context.textAlign = 'center'
   context.fillText('Game Over', canvas.width / 2, canvas.height / 2)
   context.fillText('Haz clic para jugar de nuevo', canvas.width / 2, canvas.height / 2 + 30)
+
+  // Comparamos el puntaje actual con el más alto y actualizamos si es necesario
+  const currentScore = current - 1;
+  if (currentScore > highScore) {
+    highScore = currentScore;
+    localStorage.setItem('highScore', highScore) // Guardamos el nuevo puntaje más alto
+    highScoreDisplay.textContent = `Puntuación más alta: ${highScore}`; // Actualizamos la pantalla con el nuevo puntaje
+  }
 }
 
 function handleBoxLanding() {
@@ -182,6 +197,10 @@ canvas.onpointerdown = () => {
   } else if (mode === MODES.BOUNCE) {
     mode = MODES.FALL
   }
+}
+
+restart()
+
 }
 
 restart()
